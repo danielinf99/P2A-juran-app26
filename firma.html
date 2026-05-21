@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+<meta charset="UTF-8">
+<title>EduSupply Hub</title>
+
+<style>
+body {
+    font-family: Arial;
+    margin: 0;
+    background: #f1f5f9;
+}
+
+header {
+    background: #2563eb;
+    color: white;
+    padding: 20px;
+    text-align: center;
+}
+
+#produkty {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 15px;
+    padding: 20px;
+}
+
+.karta {
+    background: white;
+    padding: 15px;
+    border-radius: 10px;
+    box-shadow: 0 5px 10px rgba(0,0,0,0.1);
+}
+
+button {
+    background: #16a34a;
+    color: white;
+    border: none;
+    padding: 10px;
+    cursor: pointer;
+    border-radius: 5px;
+}
+
+button:hover {
+    background: #15803d;
+}
+
+#objednavka {
+    background: white;
+    margin: 20px;
+    padding: 20px;
+    border-radius: 10px;
+}
+</style>
+</head>
+
+<body>
+
+<header>
+    <h1>📚 EduSupply Hub</h1>
+    <p>Vše pro školu na jednom místě</p>
+</header>
+
+<div id="produkty"></div>
+
+<div id="objednavka">
+    <h2>🛒 Objednávka</h2>
+    <p>Kusů: <span id="pocet">0</span></p>
+    <p>Cena: <span id="cena">0</span> Kč</p>
+
+    <h3>Kontaktní údaje</h3>
+    <input id="jmeno" placeholder="Jméno"><br>
+    <input id="prijmeni" placeholder="Příjmení"><br>
+    <input id="email" type="email" placeholder="Email"><br>
+    <input id="telefon" placeholder="Telefon"><br><br>
+
+    <button onclick="odeslat()">ODESLAT OBJEDNÁVKU</button>
+</div>
+
+<script>
+let objednavka = [];
+let cena = 0;
+let pocet = 0;
+
+fetch("produkty.csv")
+.then(res => res.text())
+.then(data => {
+    let radky = data.split("\n").slice(1);
+
+    radky.forEach(radek => {
+        let [nazev, cenaProdukt] = radek.split(",");
+
+        let div = document.createElement("div");
+        div.className = "karta";
+
+        div.innerHTML = `
+            <h3>${nazev}</h3>
+            <p>${cenaProdukt} Kč</p>
+            <button onclick="pridat('${nazev}', ${cenaProdukt})">Přidat</button>
+        `;
+
+        document.getElementById("produkty").appendChild(div);
+    });
+});
+
+function pridat(nazev, cenaProdukt) {
+    objednavka.push(nazev + " (" + cenaProdukt + " Kč)");
+    cena += +cenaProdukt;
+    pocet++;
+
+    document.getElementById("cena").innerText = cena;
+    document.getElementById("pocet").innerText = pocet;
+}
+
+function odeslat() {
+    let jmeno = document.getElementById("jmeno").value;
+    let prijmeni = document.getElementById("prijmeni").value;
+    let email = document.getElementById("email").value;
+    let telefon = document.getElementById("telefon").value;
+
+    if (!jmeno || !prijmeni || !email || !telefon) {
+        alert("Vyplň vše!");
+        return;
+    }
+
+    let text = `OBJEDNÁVKA:
+${objednavka.join("\n")}
+
+Celkem: ${cena} Kč
+Počet kusů: ${pocet}
+
+Zákazník:
+${jmeno} ${prijmeni}
+Email: ${email}
+Telefon: ${telefon}`;
+
+    window.location.href =
+        "mailto:app@kostka-skola.cz?subject=Objednávka EduSupply&body=" +
+        encodeURIComponent(text);
+}
+</script>
+
+</body>
+</html>
