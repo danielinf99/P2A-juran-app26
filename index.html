@@ -78,7 +78,7 @@ button:hover {
 </div>
 
 <script>
-let objednavka = [];
+let objednavka = {};
 let cena = 0;
 let pocet = 0;
 
@@ -87,8 +87,14 @@ fetch("produkty.csv")
 .then(data => {
     let radky = data.split("\n").slice(1);
 
-    radky.forEach(radek => {
-        let [nazev, cenaProdukt] = radek.split(";");
+   radky.forEach(radek => {
+    if (!radek.trim()) return; // ✅ přeskočí prázdný řádek
+
+    let [nazev, cenaProdukt] = radek.split(";");
+    if (!nazev || !cenaProdukt) return; // ✅ ochrana proti undefined
+
+    cenaProdukt = parseFloat(cenaProdukt);
+
 
         let div = document.createElement("div");
         div.className = "karta";
@@ -104,13 +110,22 @@ fetch("produkty.csv")
 });
 
 function pridat(nazev, cenaProdukt) {
-    objednavka.push(nazev + " (" + cenaProdukt + " Kč)");
-    cena += +cenaProdukt;
+
+    if (!objednavka[nazev]) {
+        objednavka[nazev] = 0;
+    }
+
+    objednavka[nazev]++;
+
+    cena += cenaProdukt;
     pocet++;
 
     document.getElementById("cena").innerText = cena;
     document.getElementById("pocet").innerText = pocet;
+
+    updateSeznam();
 }
+``
 
 function odeslat() {
     let jmeno = document.getElementById("jmeno").value;
