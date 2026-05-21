@@ -67,6 +67,7 @@ button:hover {
 
 <div id="objednavka">
     <h2>🛒 Objednávka</h2>
+    <p id="seznam"></p>
     <p>Kusů: <span id="pocet">0</span></p>
     <p>Cena: <span id="cena">0</span> Kč</p>
 
@@ -125,7 +126,8 @@ function pridat(nazev, cenaProdukt) {
     document.getElementById("cena").innerText = cena;
     document.getElementById("pocet").innerText = pocet;
 
-    updateSeznam();
+    updateSeznam(); // ✅ aktualizace výpisu
+
 }
 ``
 
@@ -155,6 +157,20 @@ Telefon: ${telefon}`;
         "mailto:app@kostka-skola.cz?subject=Objednávka EduSupply&body=" +
         encodeURIComponent(text);
 }
+
+    function updateSeznam() {
+
+    let text = "";
+
+    for (let item in objednavka) {
+        text += `${objednavka[item]}x ${item}, `;
+    }
+
+    text = text.slice(0, -2); // odstraní poslední čárku
+
+    document.getElementById("seznam").innerText = text;
+}
+
 </script>
 
 </body>
