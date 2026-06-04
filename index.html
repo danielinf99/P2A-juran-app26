@@ -60,14 +60,13 @@ button:hover {
   <img src="logo.png" style="width:80px; display:block; margin:0 auto;">
   <h1>EduSupply Hub</h1>
   <p>Vše pro školu na jednom místě</p>
-
 </header>
 
 <div id="produkty"></div>
 
 <div id="objednavka">
     <h2>🛒 Objednávka</h2>
-    <p id="seznam"></p>
+    <p id="seznam">Zatím nic nevybráno</p>
     <p>Kusů: <span id="pocet">0</span></p>
     <p>Cena: <span id="cena">0</span> Kč</p>
 
@@ -81,23 +80,26 @@ button:hover {
 </div>
 
 <script>
+
 let objednavka = {};
 let cena = 0;
 let pocet = 0;
 
+// ✅ načtení CSV
 fetch("produkty.csv")
 .then(res => res.text())
 .then(data => {
+
     let radky = data.split("\n").slice(1);
 
-   radky.forEach(radek => {
-    if (!radek.trim()) return; // ✅ přeskočí prázdný řádek
+    radky.forEach(radek => {
 
-    let [nazev, cenaProdukt] = radek.split(";");
-    if (!nazev || !cenaProdukt) return; // ✅ ochrana proti undefined
+        if (!radek.trim()) return;
 
-    cenaProdukt = parseFloat(cenaProdukt);
+        let [nazev, cenaProdukt] = radek.split(";");
+        if (!nazev || !cenaProdukt) return;
 
+        cenaProdukt = parseFloat(cenaProdukt);
 
         let div = document.createElement("div");
         div.className = "karta";
@@ -112,6 +114,7 @@ fetch("produkty.csv")
     });
 });
 
+// ✅ přidání položky
 function pridat(nazev, cenaProdukt) {
 
     if (!objednavka[nazev]) {
@@ -126,10 +129,30 @@ function pridat(nazev, cenaProdukt) {
     document.getElementById("cena").innerText = cena;
     document.getElementById("pocet").innerText = pocet;
 
-    updateSeznam(); // ✅ aktualizace výpisu
-
+    updateSeznam();
 }
+
+// ✅ seznam položek (např. 2x Sešit)
+function updateSeznam() {
+
+    let text = "";
+
+    for (let item in objednavka) {
+        text += `${objednavka[item]}x ${item}, `;
+    }
+
+    if (text === "") {
+        text = "Zatím nic nevybráno";
+    } else {
+        text = text.slice(0, -2);
+    }
+
+    document.getElementById("seznam").innerText = text;
+}
+
+// ✅ ODESLÁNÍ MAILU (HLAVNÍ OPRAVA)
 function odeslat() {
+
     let jmeno = document.getElementById("jmeno").value;
     let prijmeni = document.getElementById("prijmeni").value;
     let email = document.getElementById("email").value;
@@ -140,12 +163,21 @@ function odeslat() {
         return;
     }
 
-    let text = `OBJEDNÁVKA:
-let seznam = "";
+    let seznam = "";
 
-for (let item in objednavka) {
-    seznam += `${objednavka[item]}x ${item}\n`;
-}
+    for (let item in objednavka) {
+        seznam += `${objednavka[item]}x ${item}\n`;
+    }
+
+    if (!seznam) {
+        alert("Nevybral jsi žádné položky!");
+        return;
+    }
+
+    let text = `OBJEDNÁVKA:
+
+${seznam}
+
 Celkem: ${cena} Kč
 Počet kusů: ${pocet}
 
@@ -154,22 +186,13 @@ ${jmeno} ${prijmeni}
 Email: ${email}
 Telefon: ${telefon}`;
 
-    window.location.href =
-        "mailto:app@kostka-skola.cz?subject=Objednávka EduSupply&body=" +
-        encodeURIComponent(text);
-}
+    // ✅ MAILTO
+    let mail =
+        "mailto:app@kostka-skola.cz" +
+        "?subject=" + encodeURIComponent("Objednávka EduSupply") +
+        "&body=" + encodeURIComponent(text);
 
- function updateSeznam() {
-
-    let text = "";
-
-    for (let item in objednavka) {
-        text += `${objednavka[item]}x ${item}, `;
-    }
-
-    text = text.slice(0, -2); // odstraní poslední čárku
-
-    document.getElementById("seznam").innerText = text;
+    window.location.href = mail;
 }
 
 </script>
